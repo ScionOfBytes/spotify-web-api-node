@@ -1057,17 +1057,25 @@ SpotifyWebApi.prototype = {
 
   /**
    * Starts o Resumes the Current User's Playback
+   * @param {String} [deviceId]
    * @param {Object} [options] Options, being context_uri, offset, uris.
    * @param {requestCallback} [callback] Optional callback method to be called instead of the promise.
    * @example playbackResume({context_uri: 'spotify:album:5ht7ItJgpBH7W6vJ5BqpPr'}).then(...)
    * @returns {Promise|undefined} A promise that if successful, resolves into a paging object of tracks,
    *          otherwise an error. Not returned if a callback is given.
    */
-  play: function(options, callback) {
-    return WebApiRequest.builder(this.getAccessToken())
+  play: function(deviceId, options, callback) {
+
+    let request = WebApiRequest.builder(this.getAccessToken())
       .withPath('/v1/me/player/play')
       .withHeaders({ 'Content-Type' : 'application/json' })
       .withBodyParameters(options)
+
+    if (deviceId) {
+      request = request.withQueryParameters({ device_id: deviceId })
+    }
+
+    return request
       .build()
       .execute(HttpManager.put, callback);
   },
@@ -1385,6 +1393,19 @@ SpotifyWebApi.prototype = {
     return WebApiRequest.builder(this.getAccessToken())
       .withPath('/v1/browse/categories/' + categoryId + '/playlists')
       .withQueryParameters(options)
+      .build()
+      .execute(HttpManager.get, callback);
+  },
+
+  /**
+   * Retrieve the user's devices.
+   * @param {requestCallback} [callback] Optional callback method to be called instead of the promise.
+   * @returns {Promise|undefined} A promise that if successful, resolves to a list of devices.
+   * Not returned if a callback is given.
+   */
+  getDevices: function(callback) {
+    return WebApiRequest.builder(this.getAccessToken())
+      .withPath('/v1/me/player/devices')
       .build()
       .execute(HttpManager.get, callback);
   }
